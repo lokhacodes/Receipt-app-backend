@@ -1,0 +1,18 @@
+
+
+# backend
+backend/node_modules/
+backend/dist/
+
+# env
+
+backend/.env*
+
+# logs
+*.log
+
+# vscode
+.vscode/
+
+# macOS
+.DS_Store
