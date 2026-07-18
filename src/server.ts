@@ -28,7 +28,7 @@ app.get("/health", (_, res) => {
 
 app.use("/api", routes);
 
-
+app.use("/api/receipts", receiptRoutes);
 
 const port = Number(process.env.PORT) || 4001;
 

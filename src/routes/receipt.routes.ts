@@ -1,8 +1,8 @@
 import { Router, RequestHandler } from "express";
 
-import { upload } from "../middleware/upload.middleware";
+import { upload } from "../middleware/upload";
 
-import { uploadReceipt } from "../controllers/receipt.controller";
+import { scanReceipt } from "../controllers/receipt.controller";
 
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -10,13 +10,13 @@ const router=Router();
 
 router.post(
 
-    "/upload",
+    "/scan",
 
     authenticate as RequestHandler,
 
     upload.single("image"),
 
-    uploadReceipt
+    scanReceipt
 
 );
 

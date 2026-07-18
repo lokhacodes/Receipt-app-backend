@@ -1,59 +1,31 @@
-import { Response } from "express";
+import { Request, Response } from "express";
+import { readReceipt } from "../services/ocr.service";
+import { parseReceipt } from "../services/receiptParser";
 
-import { AuthRequest } from "../types/auth";
-
-import {
-  scanReceipt,
-  parseReceipt,
-} from "../services/receipt.service";
-
-export async function uploadReceipt(
-  req: AuthRequest,
+export const scanReceipt = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
     if (!req.file) {
       return res.status(400).json({
-        message: "Image required",
+        message: "No image uploaded",
       });
     }
 
-    // uploaded image path
-    const imagePath = req.file.path;
+    const ocr = await readReceipt(req.file);
 
-    // OCR API
-    const result = await scanReceipt(imagePath);
+    const text =
+      ocr?.ParsedResults?.[0]?.ParsedText ?? "";
 
-    if (
-      !result.ParsedResults ||
-      result.ParsedResults.length === 0
-    ) {
-      return res.status(400).json({
-        message: "OCR failed",
-      });
-    }
+    const receipt = parseReceipt(text);
 
-    // Extract plain text
-    const parsedText =
-      result.ParsedResults[0].ParsedText;
-
-    // Convert text to receipt data
-    const receipt = parseReceipt(parsedText);
-
-    return res.status(200).json({
-      success: true,
-      receipt,
-      raw: result,
-    });
-
+    return res.json(receipt);
   } catch (error) {
-
     console.error(error);
 
     return res.status(500).json({
-      success: false,
-      message: "Failed to scan receipt",
+      message: "OCR Failed",
     });
-
   }
-}
+};
