@@ -14,7 +14,7 @@ router.post(
 
     authenticate as RequestHandler,
 
-    upload.single("image"),
+    upload.single("receipt"),
 
     scanReceipt
 
