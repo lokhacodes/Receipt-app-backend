@@ -1,5 +1,4 @@
-import { Response } from "express";
-import { AuthRequest } from "../types/auth";
+import { Request, Response } from "express";
 
 import {
   createExpense,
@@ -9,16 +8,12 @@ import {
   deleteExpense,
 } from "../services/expense.service";
 
-/* ==========================================
-   CREATE EXPENSE
-========================================== */
-
-export async function createExpenseHandler(
-  req: AuthRequest,
+export const createExpenseHandler = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     const expense = await createExpense(
       userId,
@@ -30,26 +25,27 @@ export async function createExpenseHandler(
       message: "Expense created successfully.",
       data: expense,
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to create expense.",
+      message: "Failed to create expense",
     });
   }
-}
+};
 
 /* ==========================================
    GET ALL EXPENSES
 ========================================== */
 
-export async function getExpensesHandler(
-  req: AuthRequest,
+export const getExpensesHandler = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     const expenses = await getExpenses(userId);
 
@@ -57,38 +53,37 @@ export async function getExpensesHandler(
       success: true,
       data: expenses,
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch expenses.",
+      message: "Failed to fetch expenses",
     });
   }
-}
+};
 
 /* ==========================================
    GET EXPENSE BY ID
 ========================================== */
 
-export async function getExpenseHandler(
-  req: AuthRequest,
+export const getExpenseHandler = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
-    const userId = req.user.id;
-
-    const { id } = req.params;
+    const userId = (req as any).user.id;
 
     const expense = await getExpenseById(
-      id,
+      req.params.id,
       userId
     );
 
     if (!expense) {
       return res.status(404).json({
         success: false,
-        message: "Expense not found.",
+        message: "Expense not found",
       });
     }
 
@@ -96,31 +91,30 @@ export async function getExpenseHandler(
       success: true,
       data: expense,
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch expense.",
+      message: "Failed to fetch expense",
     });
   }
-}
+};
 
 /* ==========================================
    UPDATE EXPENSE
 ========================================== */
 
-export async function updateExpenseHandler(
-  req: AuthRequest,
+export const updateExpenseHandler = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
-    const userId = req.user.id;
-
-    const { id } = req.params;
+    const userId = (req as any).user.id;
 
     const expense = await updateExpense(
-      id,
+      req.params.id,
       userId,
       req.body
     );
@@ -128,60 +122,60 @@ export async function updateExpenseHandler(
     if (!expense) {
       return res.status(404).json({
         success: false,
-        message: "Expense not found.",
+        message: "Expense not found",
       });
     }
 
     return res.json({
       success: true,
-      message: "Expense updated successfully.",
+      message: "Expense updated successfully",
       data: expense,
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update expense.",
+      message: "Failed to update expense",
     });
   }
-}
+};
 
 /* ==========================================
    DELETE EXPENSE
 ========================================== */
 
-export async function deleteExpenseHandler(
-  req: AuthRequest,
+export const deleteExpenseHandler = async (
+  req: Request,
   res: Response
-) {
+) => {
   try {
-    const userId = req.user.id;
-
-    const { id } = req.params;
+    const userId = (req as any).user.id;
 
     const deleted = await deleteExpense(
-      id,
+      req.params.id,
       userId
     );
 
     if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: "Expense not found.",
+        message: "Expense not found",
       });
     }
 
     return res.json({
       success: true,
-      message: "Expense deleted successfully.",
+      message: "Expense deleted successfully",
     });
+
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to delete expense.",
+      message: "Failed to delete expense",
     });
   }
-}
+};

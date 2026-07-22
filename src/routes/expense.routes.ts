@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, RequestHandler } from "express";
 
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -12,9 +12,9 @@ import {
 
 const router = Router();
 
-/* Protect every route */
+/* Protect all expense routes */
 
-router.use(authenticate);
+router.use(authenticate as RequestHandler);
 
 /* ==========================================
    EXPENSE ROUTES
