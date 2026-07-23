@@ -7,6 +7,27 @@ import {
 } from "../models/expense.model";
 
 /* ==========================================
+   MAP RAW DB ROW TO FRONTEND-EXPECTED SHAPE
+========================================== */
+
+function mapExpense(row: any): Expense {
+  return {
+    id: row.id,
+    expense: row.expense,
+    merchant: row.merchant,
+    address: row.address,
+    amount: Number(row.amount),
+    currency: row.currency,
+    quantity: row.quantity,
+    category: row.category,
+    description: row.description,
+    notes: row.notes,
+    date: row.expense_date,
+    inReport: row.in_report,
+  };
+}
+
+/* ==========================================
    CREATE EXPENSE
 ========================================== */
 
@@ -50,7 +71,7 @@ export async function createExpense(
 
   const result = await pool.query(query, values);
 
-  return result.rows[0];
+  return mapExpense(result.rows[0]);
 }
 
 /* ==========================================
@@ -70,7 +91,7 @@ export async function getExpenses(
     [userId]
   );
 
-  return result.rows;
+  return result.rows.map(mapExpense);
 }
 
 /* ==========================================
@@ -91,7 +112,9 @@ export async function getExpenseById(
     [id, userId]
   );
 
-  return result.rows[0] || null;
+  const row = result.rows[0];
+
+  return row ? mapExpense(row) : null;
 }
 
 /* ==========================================
@@ -141,7 +164,9 @@ export async function updateExpense(
 
   const result = await pool.query(query, values);
 
-  return result.rows[0] || null;
+  const row = result.rows[0];
+
+  return row ? mapExpense(row) : null;
 }
 
 /* ==========================================

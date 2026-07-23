@@ -1,8 +1,6 @@
 export interface Expense {
   id?: string;
 
-  user_id: string;
-
   expense: string;
 
   merchant: string;
@@ -21,13 +19,9 @@ export interface Expense {
 
   notes?: string;
 
-  expense_date: Date;
+  date: string;
 
-  in_report: boolean;
-
-  created_at?: Date;
-
-  updated_at?: Date;
+  inReport: boolean;
 }
 
 /* Used when creating a new expense */
