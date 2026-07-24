@@ -9,6 +9,8 @@ import cookieParser from "cookie-parser";
 import routes from "./routes";
 import receiptRoutes from "./routes/receipt.routes";
 
+
+
 const app = express();
 
 app.use(
