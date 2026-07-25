@@ -13,19 +13,32 @@ import {
 const jwtSecret = process.env.JWT_SECRET!;
 const refreshSecret = process.env.REFRESH_SECRET!;
 
-const schema = Joi.object({
-    username: Joi.string().min(3).required(),
+// Schema for registration with name, email, password, confirmPassword
+const registerSchema = Joi.object({
+    name: Joi.string().min(2).max(100).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+        'any.only': 'Passwords do not match',
+    }),
+});
+
+// Schema for login with email and password
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
     password: Joi.string().min(6).required(),
 });
 
 const createAccessToken = (
   id: string,
-  username: string
+  email: string,
+  name: string
 ) =>
   jwt.sign(
     {
       id,
-      username,
+      email,
+      name,
     },
     jwtSecret,
     {
@@ -35,12 +48,14 @@ const createAccessToken = (
 
 const createRefreshToken = (
   id: string,
-  username: string
+  email: string,
+  name: string
 ) =>
   jwt.sign(
     {
       id,
-      username,
+      email,
+      name,
     },
     refreshSecret,
     {
@@ -53,12 +68,14 @@ export const register = async (
     res: Response
 ) => {
 
-    const { error, value } = schema.validate(req.body);
+    const { error, value } = registerSchema.validate(req.body);
 
-    if (error)
+    if (error) {
+        const message = error.details[0]?.message || "Invalid input";
         return res.status(400).json({
-            message: "Invalid input",
+            message,
         });
+    }
 
     const hash = await bcrypt.hash(
         value.password,
@@ -68,18 +85,26 @@ export const register = async (
     try {
 
         await createUser(
-            value.username,
+            value.name,
+            value.email,
             hash
         );
 
         return res.json({
-            message: "Registered",
+            message: "Registered successfully",
         });
 
-    } catch {
+    } catch (err: any) {
+
+        // Check for duplicate email error
+        if (err?.code === '23505' || err?.constraint === 'users_email_key') {
+            return res.status(409).json({
+                message: "Email already exists",
+            });
+        }
 
         return res.status(409).json({
-            message: "Username already exists",
+            message: "Email already exists",
         });
 
     }
@@ -90,15 +115,16 @@ export const login = async (
     res: Response
 ) => {
 
-    const { error, value } = schema.validate(req.body);
+    const { error, value } = loginSchema.validate(req.body);
 
-    if (error)
+    if (error) {
         return res.status(400).json({
             message: "Invalid input",
         });
+    }
 
     const user = await findUser(
-        value.username
+        value.email
     );
 
     if (!user)
@@ -118,16 +144,18 @@ export const login = async (
 
     const accessToken = createAccessToken(
     user.id,
-    user.username
+    user.email,
+    user.name
 );
 
 const refreshToken = createRefreshToken(
     user.id,
-    user.username
+    user.email,
+    user.name
 );
 
     await saveRefreshToken(
-        value.username,
+        value.email,
         refreshToken
     );
 
@@ -160,8 +188,3 @@ export const logout = async (
         message: "Logged out",
     });
 };
-
-
-
-
-

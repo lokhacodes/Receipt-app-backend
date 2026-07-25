@@ -1,29 +1,31 @@
 import { pool } from "../utils/db";
 
 export const createUser = async (
-    username: string,
+    name: string,
+    email: string,
     passwordHash: string
 ) => {
     return pool.query(
         `
-        INSERT INTO users(username,password_hash)
-        VALUES($1,$2)
+        INSERT INTO users(name, email, password_hash)
+        VALUES($1,$2,$3)
         `,
-        [username, passwordHash]
+        [name, email, passwordHash]
     );
 };
 
-export async function findUser(username: string) {
+export async function findUser(email: string) {
   const result = await pool.query(
     `
     SELECT id,
-           username,
+           name,
+           email,
            password_hash
     FROM users
-    WHERE username = $1
+    WHERE email = $1
     LIMIT 1
     `,
-    [username]
+    [email]
   );
 
   return result.rows[0];
@@ -31,16 +33,16 @@ export async function findUser(username: string) {
 
 
 export const saveRefreshToken = async (
-    username: string,
+    email: string,
     token: string
 ) => {
     return pool.query(
         `
         UPDATE users
         SET refresh_token=$1
-        WHERE username=$2
+        WHERE email=$2
         `,
-        [token, username]
+        [token, email]
     );
 };
 
