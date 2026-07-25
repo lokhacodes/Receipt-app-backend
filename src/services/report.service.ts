@@ -109,10 +109,15 @@ export async function getReports(
 ): Promise<Report[]> {
   const result = await pool.query(
     `
-    SELECT *
-    FROM reports
-    WHERE user_id=$1
-    ORDER BY created_at DESC;
+    SELECT
+      r.*,
+      COALESCE(COUNT(re.expense_id), 0) AS expense_count
+    FROM reports r
+    LEFT JOIN report_expenses re
+      ON r.id = re.report_id
+    WHERE r.user_id=$1
+    GROUP BY r.id
+    ORDER BY r.created_at DESC;
     `,
     [userId]
   );
@@ -130,10 +135,15 @@ export async function getReportById(
 ): Promise<Report | null> {
   const result = await pool.query(
     `
-    SELECT *
-    FROM reports
-    WHERE id=$1
-    AND user_id=$2;
+    SELECT
+      r.*,
+      COALESCE(COUNT(re.expense_id), 0) AS expense_count
+    FROM reports r
+    LEFT JOIN report_expenses re
+      ON r.id = re.report_id
+    WHERE r.id=$1
+      AND r.user_id=$2
+    GROUP BY r.id;
     `,
     [id, userId]
   );
