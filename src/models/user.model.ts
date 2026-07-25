@@ -58,3 +58,33 @@ export const removeRefreshToken = async (
         [token]
     );
 };
+
+export const findUserById = async (id: string) => {
+    const result = await pool.query(
+        `
+        SELECT id, name, email
+        FROM users
+        WHERE id = $1
+        LIMIT 1
+        `,
+        [id]
+    );
+    return result.rows[0] || null;
+};
+
+export const updateUser = async (
+    id: string,
+    name: string,
+    email: string
+) => {
+    const result = await pool.query(
+        `
+        UPDATE users
+        SET name = $1, email = $2
+        WHERE id = $3
+        RETURNING id, name, email
+        `,
+        [name, email, id]
+    );
+    return result.rows[0] || null;
+};

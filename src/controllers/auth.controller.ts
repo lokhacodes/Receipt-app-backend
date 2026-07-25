@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import {
     createUser,
     findUser,
+    findUserById,
+    updateUser,
     saveRefreshToken,
     removeRefreshToken,
 } from "../models/user.model";
@@ -187,4 +189,94 @@ export const logout = async (
     res.json({
         message: "Logged out",
     });
+};
+
+/* ==========================================
+   GET PROFILE
+========================================== */
+
+export const getProfile = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const userReq = req as any;
+        const user = await findUserById(userReq.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        return res.json({
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+            },
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
+};
+
+/* ==========================================
+   UPDATE PROFILE
+========================================== */
+
+const updateProfileSchema = Joi.object({
+    name: Joi.string().min(2).max(100).required(),
+    email: Joi.string().email().required(),
+});
+
+export const updateProfile = async (
+    req: Request,
+    res: Response
+) => {
+    const { error, value } = updateProfileSchema.validate(req.body);
+
+    if (error) {
+        const message = error.details[0]?.message || "Invalid input";
+        return res.status(400).json({
+            message,
+        });
+    }
+
+    try {
+        const userReq = req as any;
+        const updatedUser = await updateUser(
+            userReq.user.id,
+            value.name,
+            value.email
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const newAccessToken = createAccessToken(
+            updatedUser.id,
+            updatedUser.email,
+            updatedUser.name
+        );
+
+        return res.json({
+            message: "Profile updated successfully",
+            user: {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+            },
+            accessToken: newAccessToken,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 };

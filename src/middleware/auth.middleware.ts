@@ -1,9 +1,9 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { AuthRequest, JwtPayload } from "../types/auth";
+import { JwtPayload } from "../types/auth";
 
 export const authenticate = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -23,7 +23,7 @@ export const authenticate = (
         return res.sendStatus(403);
       }
 
-      req.user = decoded as JwtPayload;
+      (req as any).user = decoded as JwtPayload;
 
       next();
     }
